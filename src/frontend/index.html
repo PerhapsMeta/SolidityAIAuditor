@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolidityAIAuditor — Smart Contract Auditor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- topbar -->
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <span class="logo-name">SolidityAIAuditor</span>
+      <span class="logo-tag">/ smart contract auditor</span>
+    </div>
+    <div class="topbar-right">
+      <button class="lang-chip active">Solidity</button>
+    </div>
+  </header>
+
+  <!-- workspace -->
+  <div class="workspace">
+
+    <!-- LEFT: input panel -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-head-left">
+          <div class="ph-dot" id="input-dot" style="background: #34d399;"></div>
+          <span id="file-label">No file selected</span>
+        </div>
+        <span class="line-count" id="line-count">0 lines</span>
+      </div>
+
+      <div class="editor-wrap">
+        <div class="upload-bar">
+          <input type="file" id="file-input" accept=".sol" hidden>
+          <button class="btn-ghost" id="upload-btn" onclick="triggerFilePicker()">Upload .sol file</button>
+          <span class="upload-hint" id="upload-hint">Select a Solidity source file to preview and analyze</span>
+        </div>
+        <div class="editor-inner">
+          <div class="line-nums" id="line-nums">1</div>
+          <textarea
+            id="code-input"
+            readonly
+            spellcheck="false"
+            autocomplete="off"
+            placeholder="// Upload a .sol contract file to preview its contents here."
+          ></textarea>
+        </div>
+        <div class="action-bar">
+          <button class="btn-primary" id="analyze-btn" onclick="startAnalysis()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.35-4.35"/>
+            </svg>
+            Analyze contract
+          </button>
+          <button class="btn-ghost" onclick="clearAll()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: result panel -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-head-left">
+          <div class="ph-dot" id="result-dot"></div>
+          audit report
+        </div>
+        <span class="scan-badge" id="scan-badge"></span>
+      </div>
+
+      <div class="result-body">
+
+        <!-- empty -->
+        <div class="empty-state" id="empty-state">
+          <div class="empty-ring">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="empty-title">No contract analyzed</div>
+          <div class="empty-sub">Upload your `.sol` file on the left<br>and click Analyze to begin</div>
+        </div>
+
+        <!-- loading -->
+        <div class="loading-state" id="loading-state">
+          <div class="scan-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="prog-wrap">
+            <div class="prog-label" id="prog-label">Initializing scanner...</div>
+            <div class="prog-track">
+              <div class="prog-fill" id="prog-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- error -->
+        <div class="error-state" id="error-state">
+          <div class="error-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 8v5"/>
+              <circle cx="12" cy="16.5" r="1"/>
+            </svg>
+          </div>
+          <div class="error-title" id="error-title">Analysis failed</div>
+          <div class="error-message" id="error-message">Please review the request and try again.</div>
+          <div class="error-details" id="error-details"></div>
+        </div>
+
+        <!-- result -->
+        <div class="result-state" id="result-state">
+
+          <!-- summary -->
+          <div class="summary-section">
+            <div class="summary-headline" id="score-headline">—</div>
+            <div class="summary-sub" id="score-sub">—</div>
+          </div>
+
+          <!-- stats -->
+          <div class="stat-row">
+            <div class="stat-cell s-high">
+              <div class="stat-n" id="cnt-high">0</div>
+              <div class="stat-lbl">High</div>
+            </div>
+            <div class="stat-cell s-med">
+              <div class="stat-n" id="cnt-med">0</div>
+              <div class="stat-lbl">Medium</div>
+            </div>
+            <div class="stat-cell s-low">
+              <div class="stat-n" id="cnt-low">0</div>
+              <div class="stat-lbl">Low</div>
+            </div>
+          </div>
+
+          <!-- vulns -->
+          <div class="vuln-section">
+            <div class="section-label">Vulnerabilities found</div>
+            <div id="vuln-list"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
