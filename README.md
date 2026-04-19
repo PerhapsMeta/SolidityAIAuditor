@@ -8,7 +8,7 @@ AI-assisted Solidity smart contract auditing with a lightweight web UI and a Fas
 
 ## Overview
 
-Solidity AI Auditor is a web-based assistant for reviewing Solidity smart contracts. Users upload a `.sol` file in the frontend, and the backend combines deterministic rule-based checks with an OpenAI structured-output audit pass to generate a concise security report.
+Solidity AI Auditor is a web-based vulnerability detector for reviewing Solidity smart contracts. Users upload a `.sol` file in the frontend, and the backend combines deterministic rule-based checks with an OpenAI structured-output audit pass to generate a concise security report.
 
 The project is designed as a practical prototype: fast to run locally, easy to demo, and focused on high-signal findings such as `delegatecall`, `tx.origin`, unsafe low-level calls, timestamp dependence, unchecked arithmetic, and outdated Solidity compiler targets.
 
